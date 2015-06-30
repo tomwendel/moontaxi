@@ -38,6 +38,9 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Models\Block.cs" />
+    <Compile Include="Models\Level.cs" />
+    <Compile Include="Models\Taxi.cs" />
     <Compile Include="MoonTaxi.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -50,6 +53,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Textures\background.png" />
+    <Content Include="Content\Textures\stone.png" />
+    <Content Include="Content\Textures\taxi.png" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
