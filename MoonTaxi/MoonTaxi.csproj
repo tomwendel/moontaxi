@@ -61,6 +61,12 @@
     <Content Include="Content\Textures\adam.png" />
     <Content Include="Content\Textures\background.png" />
     <Content Include="Content\Textures\eva.png" />
+    <Content Include="Content\Textures\eva_cyan.PNG" />
+    <Content Include="Content\Textures\eva_darkgreen.PNG" />
+    <Content Include="Content\Textures\eva_green.PNG" />
+    <Content Include="Content\Textures\eva_orange.PNG" />
+    <Content Include="Content\Textures\eva_pink.PNG" />
+    <Content Include="Content\Textures\eva_violet.PNG" />
     <Content Include="Content\Textures\flag.png" />
     <Content Include="Content\Textures\pix.png" />
     <Content Include="Content\Textures\stone.png" />

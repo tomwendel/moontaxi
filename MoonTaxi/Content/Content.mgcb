@@ -125,3 +125,33 @@
 /processorParam:TextureFormat=Color
 /build:Textures/flag.png
 
+#begin Textures/eva_cyan.PNG
+/importer:
+/processor:
+/build:Textures/eva_cyan.PNG
+
+#begin Textures/eva_darkgreen.PNG
+/importer:
+/processor:
+/build:Textures/eva_darkgreen.PNG
+
+#begin Textures/eva_green.PNG
+/importer:
+/processor:
+/build:Textures/eva_green.PNG
+
+#begin Textures/eva_orange.PNG
+/importer:
+/processor:
+/build:Textures/eva_orange.PNG
+
+#begin Textures/eva_pink.PNG
+/importer:
+/processor:
+/build:Textures/eva_pink.PNG
+
+#begin Textures/eva_violet.PNG
+/importer:
+/processor:
+/build:Textures/eva_violet.PNG
+
