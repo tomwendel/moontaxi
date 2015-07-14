@@ -39,6 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Models\Block.cs" />
+    <Compile Include="Models\Guest.cs" />
     <Compile Include="Models\Level.cs" />
     <Compile Include="Models\Taxi.cs" />
     <Compile Include="MoonTaxi.cs" />
@@ -53,9 +54,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Sounds\crash.wav" />
+    <Content Include="Content\Sounds\schramm.wav" />
+    <Content Include="Content\Sounds\taxi.wav" />
+    <Content Include="Content\Sounds\triebwerk.wav" />
+    <Content Include="Content\Textures\adam.png" />
     <Content Include="Content\Textures\background.png" />
+    <Content Include="Content\Textures\eva.png" />
+    <Content Include="Content\Textures\flag.png" />
+    <Content Include="Content\Textures\pix.png" />
     <Content Include="Content\Textures\stone.png" />
     <Content Include="Content\Textures\taxi.png" />
+    <Content Include="Content\Textures\taxisign.png" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
