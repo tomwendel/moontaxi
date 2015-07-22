@@ -38,6 +38,8 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Generator\ILevelGenerator.cs" />
+    <Compile Include="Generator\LevelGenerator.cs" />
     <Compile Include="Models\Block.cs" />
     <Compile Include="Models\Guest.cs" />
     <Compile Include="Models\Level.cs" />

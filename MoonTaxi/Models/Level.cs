@@ -20,18 +20,14 @@ namespace MoonTaxi.Models
         [XmlIgnore]
         public List<Guest> Guests { get; set; }
 
+        public Vector2 TaxiSpawn { get; set; }
+
         public Level()
         {
             Blocks = new List<Block>();
             Guests = new List<Guest>();
             Size = new Vector2(1280, 720);
             ParallelGuests = 1;
-
-            Blocks.AddRange(new[]{
-                new Block() { Size = new Rectangle(100, 200, 200, 50), SpawnPlatform = true },
-                new Block() { Size = new Rectangle(500, 200, 200, 50), SpawnPlatform = true },
-                new Block() { Size = new Rectangle(500, 600, 200, 50), SpawnPlatform = true },
-            });
         }
     }
 }

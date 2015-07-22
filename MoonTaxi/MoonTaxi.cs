@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MoonTaxi.Generator;
 using MoonTaxi.Models;
 using System;
 using System.Linq;
@@ -18,7 +19,8 @@ namespace MoonTaxi
         Random rand = new Random();
 
         Taxi taxi = new Taxi();
-        Level level = new Level();
+        LevelGenerator levelGenerator;
+        Level level;
         int points = 0;
 
         Texture2D taxiTexture;
@@ -43,6 +45,11 @@ namespace MoonTaxi
         {
             graphics = new GraphicsDeviceManager(this);
 
+            levelGenerator = new LevelGenerator();
+
+            level = levelGenerator.CreateLevel(System.Environment.TickCount);
+            taxi.Position = level.TaxiSpawn;
+
             graphics.PreferredBackBufferWidth = (int)level.Size.X;
             graphics.PreferredBackBufferHeight = (int)level.Size.Y;
 
@@ -58,6 +65,7 @@ namespace MoonTaxi
 
         protected override void LoadContent()
         {
+            Window.Position = new Point(10, 50);
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
