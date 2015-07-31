@@ -7,6 +7,7 @@ using System.Text;
 
 namespace MoonTaxi.Models
 {
+    //Taxi Model
     internal class Taxi
     {
         public Vector2 DeltaVelocity { get; set; }
