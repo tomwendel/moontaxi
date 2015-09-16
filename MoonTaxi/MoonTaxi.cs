@@ -21,11 +21,12 @@ namespace MoonTaxi
         SpriteBatch spriteBatch;
         Random rand = new Random();
 
+        
         List<Taxi> taxis = new List<Taxi>();
         Level level;
         int points = 0;
 
-        Texture2D taxiTexture;
+        List<Texture2D> taxiTextures = new List<Texture2D>();
         Texture2D background;
         Texture2D stone;
         Texture2D eva;
@@ -63,13 +64,28 @@ namespace MoonTaxi
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            taxiTexture = Content.Load<Texture2D>("Textures/taxi");
             background = Content.Load<Texture2D>("Textures/background");
             stone = Content.Load<Texture2D>("Textures/stone");
             eva = Content.Load<Texture2D>("Textures/eva");
             pix = Content.Load<Texture2D>("Textures/pix");
             taxiSign = Content.Load<Texture2D>("Textures/taxisign");
             flag = Content.Load<Texture2D>("Textures/flag");
+
+            taxiTextures.Add(Content.Load<Texture2D>("Textures/taxi_blue"));
+            taxiTextures.Add(Content.Load<Texture2D>("Textures/taxi_red"));
+            taxiTextures.Add(Content.Load<Texture2D>("Textures/taxi_yellow"));
+            taxiTextures.Add(Content.Load<Texture2D>("Textures/taxi_green"));
+
+            Random rand = new Random();
+            Texture2D buffer;
+            for (int i = 0; i < 100; i++)
+            {
+                int from = rand.Next(0, 4);
+                int to = rand.Next(0, 4);
+                buffer = taxiTextures[from];
+                taxiTextures[from] = taxiTextures[to];
+                taxiTextures[to] = buffer;
+            }
 
             Taxi taxi1 = new Taxi(new LocalInput(LocalInputType.GamePad1));
             taxi1.Position = level.GetTaxiSpawn();
@@ -332,9 +348,11 @@ namespace MoonTaxi
             spriteBatch.End();
 
             spriteBatch.Begin();
+
+            int index = 0;
             foreach (var taxi in taxis)
             {
-                spriteBatch.Draw(taxiTexture, new Rectangle(
+                spriteBatch.Draw(taxiTextures[index++], new Rectangle(
                     (int)(taxi.Position.X - taxi.Size.X / 2),
                     (int)(taxi.Position.Y - taxi.Size.Y / 2),
                     (int)taxi.Size.X,

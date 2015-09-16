@@ -74,8 +74,11 @@
     <Content Include="Content\Textures\flag.png" />
     <Content Include="Content\Textures\pix.png" />
     <Content Include="Content\Textures\stone.png" />
-    <Content Include="Content\Textures\taxi.png" />
     <Content Include="Content\Textures\taxisign.png" />
+    <Content Include="Content\Textures\taxi_blue.png" />
+    <Content Include="Content\Textures\taxi_green.png" />
+    <Content Include="Content\Textures\taxi_red.png" />
+    <Content Include="Content\Textures\taxi_yellow.png" />
     <Content Include="Icon.ico" />
   </ItemGroup>
   <ItemGroup>
