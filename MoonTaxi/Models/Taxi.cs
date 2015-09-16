@@ -42,7 +42,14 @@ namespace MoonTaxi.Models
         internal void Update(GameTime gameTime)
         {
             var gamepad = GamePad.GetState(PlayerIndex.One);
-            DeltaVelocity = gamepad.ThumbSticks.Left * new Vector2(1, -1) * (float)gameTime.ElapsedGameTime.TotalSeconds * 100;
+            var keyboard = Keyboard.GetState();
+
+
+            DeltaVelocity = gamepad.ThumbSticks.Left * new Vector2(1, -1);
+            DeltaVelocity += new Vector2((keyboard.IsKeyDown(Keys.Left) ? -1 : 0) + (keyboard.IsKeyDown(Keys.Right) ? 1 : 0),
+                                        (keyboard.IsKeyDown(Keys.Up) ? -1 : 0) + (keyboard.IsKeyDown(Keys.Down) ? 1 : 0));
+            DeltaVelocity.Normalize();
+            DeltaVelocity *= (float)gameTime.ElapsedGameTime.TotalSeconds * 100;
             Velocity += DeltaVelocity;
 
             Velocity += new Vector2(0, 1.6f * (float)gameTime.ElapsedGameTime.TotalSeconds);
