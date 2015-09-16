@@ -6,9 +6,11 @@ using MoonTaxi.Components;
 using MoonTaxi.Generator;
 using MoonTaxi.Interaction;
 using MoonTaxi.Models;
+using MoonTaxi.Network;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace MoonTaxi
 {
@@ -21,11 +23,12 @@ namespace MoonTaxi
         SpriteBatch spriteBatch;
         Random rand = new Random();
 
-        
+
         List<Taxi> taxis = new List<Taxi>();
         Level level;
         int points = 0;
 
+        List<Color> playerColor = new List<Color>();
         List<Texture2D> taxiTextures = new List<Texture2D>();
         Texture2D background;
         Texture2D stone;
@@ -33,12 +36,27 @@ namespace MoonTaxi
         Texture2D pix;
         Texture2D taxiSign;
         Texture2D flag;
+        SpriteFont hudFont;
 
         SoundComponent sound;
-
-        public MoonTaxi()
+        private bool isServer = true;
+        private Server server;
+        private Client client;
+        public MoonTaxi(bool isServer,string username)
             : base()
         {
+            this.isServer = isServer;
+            if (isServer)
+            {
+                server = new Server();
+                server.Start();
+            }
+            else
+            {
+                client = new Client(username);
+                client.Connect(IPAddress.Loopback, 1234);
+                client.DataReceived += Client_DataReceived;
+            }
             graphics = new GraphicsDeviceManager(this);
 
             level = new RandomLevel(new Vector2(1280, 720), 2, Environment.TickCount);
@@ -49,6 +67,11 @@ namespace MoonTaxi
             Content.RootDirectory = "Content";
 
             Components.Add(sound = new SoundComponent(this));
+        }
+
+        private void Client_DataReceived(Client sender, byte[] buffer, int count)
+        {
+            Console.WriteLine("Respond: " + System.Text.Encoding.Default.GetString(buffer, 0, count));
         }
 
         protected override void Initialize()
@@ -70,21 +93,33 @@ namespace MoonTaxi
             pix = Content.Load<Texture2D>("Textures/pix");
             taxiSign = Content.Load<Texture2D>("Textures/taxisign");
             flag = Content.Load<Texture2D>("Textures/flag");
+            hudFont = Content.Load<SpriteFont>("HudFont");
 
             taxiTextures.Add(Content.Load<Texture2D>("Textures/taxi_blue"));
             taxiTextures.Add(Content.Load<Texture2D>("Textures/taxi_red"));
             taxiTextures.Add(Content.Load<Texture2D>("Textures/taxi_yellow"));
             taxiTextures.Add(Content.Load<Texture2D>("Textures/taxi_green"));
 
+            playerColor.Add(Color.Blue);
+            playerColor.Add(Color.Red);
+            playerColor.Add(Color.Yellow);
+            playerColor.Add(Color.Green);
+
             Random rand = new Random();
             Texture2D buffer;
+            Color colorBuffer;
             for (int i = 0; i < 100; i++)
             {
                 int from = rand.Next(0, 4);
                 int to = rand.Next(0, 4);
+
                 buffer = taxiTextures[from];
                 taxiTextures[from] = taxiTextures[to];
                 taxiTextures[to] = buffer;
+
+                colorBuffer = playerColor[from];
+                playerColor[from] = playerColor[to];
+                playerColor[to] = colorBuffer;
             }
 
             Taxi taxi1 = new Taxi(new LocalInput(LocalInputType.GamePad1));
@@ -352,17 +387,31 @@ namespace MoonTaxi
             int index = 0;
             foreach (var taxi in taxis)
             {
-                spriteBatch.Draw(taxiTextures[index++], new Rectangle(
+                spriteBatch.Draw(taxiTextures[index], new Rectangle(
                     (int)(taxi.Position.X - taxi.Size.X / 2),
                     (int)(taxi.Position.Y - taxi.Size.Y / 2),
                     (int)taxi.Size.X,
                     (int)taxi.Size.Y), Color.White);
                 if (taxi.OnGround != null)
                     spriteBatch.Draw(pix, new Rectangle(10, 10, 10, 10), Color.Red);
+
+                spriteBatch.Draw(pix, new Rectangle(10 + (index * 25), 10, 20, 20), playerColor[index]);
+                spriteBatch.DrawString(hudFont, "0", new Vector2(11 + (index * 25), 11), Color.White);
+
+                index++;
             }
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+        protected override void OnExiting(object sender, EventArgs args)
+        {
+            base.OnExiting(sender, args);
+
+            if (isServer)
+                server.Stop();
+            else
+                client.Close();
         }
     }
 }

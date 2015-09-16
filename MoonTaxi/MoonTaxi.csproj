@@ -37,9 +37,18 @@
   <PropertyGroup>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="Components\SoundComponent.cs" />
     <Compile Include="Interaction\LocalInput.cs" />
+    <Compile Include="MainWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainWindow.Designer.cs">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\Block.cs" />
     <Compile Include="Models\Guest.cs" />
     <Compile Include="Interaction\IInput.cs" />
@@ -47,6 +56,13 @@
     <Compile Include="Generator\RandomLevel.cs" />
     <Compile Include="Models\Taxi.cs" />
     <Compile Include="MoonTaxi.cs" />
+    <Compile Include="Network\Client.cs" />
+    <Compile Include="Network\HandshakeResponse.cs" />
+    <Compile Include="Network\HandshakeRequest.cs" />
+    <Compile Include="Network\LevelInitMessage.cs" />
+    <Compile Include="Network\Message.cs" />
+    <Compile Include="Network\MessageManager.cs" />
+    <Compile Include="Network\Server.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -55,6 +71,9 @@
       <HintPath>$(MSBuildProgramFiles32)\MonoGame\v3.0\Assemblies\Windows\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +102,11 @@
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="MainWindow.resx">
+      <DependentUpon>MainWindow.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />

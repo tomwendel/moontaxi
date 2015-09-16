@@ -224,3 +224,9 @@
 /processorParam:TextureFormat=Color
 /build:Textures/taxi_yellow.png
 
+#begin HudFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=NoChange
+/build:HudFont.spritefont
+

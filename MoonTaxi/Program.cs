@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 #endregion
 
 namespace MoonTaxi
@@ -18,7 +19,18 @@ namespace MoonTaxi
         [STAThread]
         static void Main()
         {
-            using (var game = new MoonTaxi())
+            bool isServer = false;
+            string username=null;
+            using (MainWindow form = new MainWindow())
+            {
+                Application.Run(form);
+                if (form.DialogResult != DialogResult.OK)
+                    return;
+                isServer = form.IsServer;
+                username = form.Username;
+            }
+
+            using (var game = new MoonTaxi(isServer,username))
                 game.Run();
         }
     }
