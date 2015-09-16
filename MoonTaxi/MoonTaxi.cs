@@ -2,9 +2,12 @@
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MoonTaxi.Components;
 using MoonTaxi.Generator;
+using MoonTaxi.Interaction;
 using MoonTaxi.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace MoonTaxi
@@ -18,8 +21,7 @@ namespace MoonTaxi
         SpriteBatch spriteBatch;
         Random rand = new Random();
 
-        Taxi taxi = new Taxi();
-        LevelGenerator levelGenerator;
+        List<Taxi> taxis = new List<Taxi>();
         Level level;
         int points = 0;
 
@@ -31,29 +33,21 @@ namespace MoonTaxi
         Texture2D taxiSign;
         Texture2D flag;
 
-        SoundEffect engine;
-        SoundEffectInstance engineInstance;
-
-        SoundEffect scratch;
-        SoundEffectInstance scratchInstance;
-
-        SoundEffect crash;
-        SoundEffect shout;
+        SoundComponent sound;
 
         public MoonTaxi()
             : base()
         {
             graphics = new GraphicsDeviceManager(this);
 
-            levelGenerator = new LevelGenerator();
-
-            level = levelGenerator.CreateLevel(System.Environment.TickCount);
-            taxi.Position = level.TaxiSpawn;
+            level = new RandomLevel(new Vector2(1280, 720), 2, Environment.TickCount);
 
             graphics.PreferredBackBufferWidth = (int)level.Size.X;
             graphics.PreferredBackBufferHeight = (int)level.Size.Y;
 
             Content.RootDirectory = "Content";
+
+            Components.Add(sound = new SoundComponent(this));
         }
 
         protected override void Initialize()
@@ -77,20 +71,15 @@ namespace MoonTaxi
             taxiSign = Content.Load<Texture2D>("Textures/taxisign");
             flag = Content.Load<Texture2D>("Textures/flag");
 
-            engine = Content.Load<SoundEffect>("Sounds/triebwerk");
-            engineInstance = engine.CreateInstance();
-            engineInstance.IsLooped = true;
-            engineInstance.Volume = 0f;
-            engineInstance.Play();
+            Taxi taxi1 = new Taxi(new LocalInput(LocalInputType.GamePad1));
+            taxi1.Position = level.GetTaxiSpawn();
+            taxis.Add(taxi1);
+            sound.AddTaxi(taxi1);
 
-            scratch = Content.Load<SoundEffect>("Sounds/schramm");
-            scratchInstance = scratch.CreateInstance();
-            scratchInstance.IsLooped = true;
-            scratchInstance.Volume = 0f;
-            scratchInstance.Play();
-
-            crash = Content.Load<SoundEffect>("Sounds/crash");
-            shout = Content.Load<SoundEffect>("Sounds/taxi");
+            Taxi taxi2 = new Taxi(new LocalInput(LocalInputType.Keyboard1));
+            taxi2.Position = level.GetTaxiSpawn();
+            taxis.Add(taxi2);
+            sound.AddTaxi(taxi2);
         }
 
         protected override void UnloadContent()
@@ -100,135 +89,138 @@ namespace MoonTaxi
 
         protected override void Update(GameTime gameTime)
         {
-            taxi.Update(gameTime);
-
-            float volume = Math.Max(0, Math.Min(1, taxi.DeltaVelocity.Length()));
-            engineInstance.Volume = volume;
-
-            #region Kollision mit der Wand
-
-            Vector2 sizeHalf = taxi.Size / 2;
-            if (taxi.Position.X - sizeHalf.X < 0)
+            foreach (var taxi in taxis)
             {
-                taxi.Position = new Vector2(sizeHalf.X, taxi.Position.Y);
-                taxi.Velocity *= new Vector2(0, 1);
-            }
-            if (taxi.Position.Y - sizeHalf.Y < 0)
-            {
-                taxi.Position = new Vector2(taxi.Position.X, sizeHalf.Y);
-                taxi.Velocity *= new Vector2(1, 0);
-            }
-            if (taxi.Position.X + sizeHalf.X > level.Size.X)
-            {
-                taxi.Position = new Vector2(level.Size.X - sizeHalf.X, taxi.Position.Y);
-                taxi.Velocity *= new Vector2(0, 1);
-            }
-            if (taxi.Position.Y + sizeHalf.Y > level.Size.Y)
-            {
-                taxi.Position = new Vector2(taxi.Position.X, level.Size.Y - sizeHalf.Y);
-                taxi.Velocity *= new Vector2(1, 0);
-            }
+                taxi.Update(gameTime);
 
-            #endregion
+                float volume = Math.Max(0, Math.Min(1, taxi.DeltaVelocity.Length()));
+                sound.SetEngineVolume(taxi, volume);
 
-            #region Kollision mit Blöcken
+                #region Kollision mit der Wand
 
-            Vector2 deltaPosition = taxi.Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            float taxiLeft = taxi.Position.X - sizeHalf.X;
-            float taxiTop = taxi.Position.Y - sizeHalf.Y;
-            float taxiRight = taxi.Position.X + sizeHalf.X;
-            float taxiBottom = taxi.Position.Y + sizeHalf.Y;
-
-            taxi.OnGround = null;
-            float scratchVolume = 0f;
-            float scratchPitch = 0f;
-
-            foreach (var block in level.Blocks)
-            {
-                if (taxiLeft < block.Size.Right && taxiRight > block.Size.Left &&
-                    taxiTop < block.Size.Bottom && taxiBottom > block.Size.Top)
+                Vector2 sizeHalf = taxi.Size / 2;
+                if (taxi.Position.X - sizeHalf.X < 0)
                 {
-                    float factorX = 0f;
-                    if (deltaPosition.X > 0)
+                    taxi.Position = new Vector2(sizeHalf.X, taxi.Position.Y);
+                    taxi.Velocity *= new Vector2(0, 1);
+                }
+                if (taxi.Position.Y - sizeHalf.Y < 0)
+                {
+                    taxi.Position = new Vector2(taxi.Position.X, sizeHalf.Y);
+                    taxi.Velocity *= new Vector2(1, 0);
+                }
+                if (taxi.Position.X + sizeHalf.X > level.Size.X)
+                {
+                    taxi.Position = new Vector2(level.Size.X - sizeHalf.X, taxi.Position.Y);
+                    taxi.Velocity *= new Vector2(0, 1);
+                }
+                if (taxi.Position.Y + sizeHalf.Y > level.Size.Y)
+                {
+                    taxi.Position = new Vector2(taxi.Position.X, level.Size.Y - sizeHalf.Y);
+                    taxi.Velocity *= new Vector2(1, 0);
+                }
+
+                #endregion
+
+                #region Kollision mit Blöcken
+
+                Vector2 deltaPosition = taxi.Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                float taxiLeft = taxi.Position.X - sizeHalf.X;
+                float taxiTop = taxi.Position.Y - sizeHalf.Y;
+                float taxiRight = taxi.Position.X + sizeHalf.X;
+                float taxiBottom = taxi.Position.Y + sizeHalf.Y;
+
+                taxi.OnGround = null;
+                float scratchVolume = 0f;
+                float scratchPitch = 0f;
+
+                foreach (var block in level.Blocks)
+                {
+                    if (taxiLeft < block.Size.Right && taxiRight > block.Size.Left &&
+                        taxiTop < block.Size.Bottom && taxiBottom > block.Size.Top)
                     {
-                        float deltaLeft = taxiRight - block.Size.Left;
-                        factorX = deltaLeft / deltaPosition.X;
-                    }
-                    else
-                    {
-                        float deltaRight = block.Size.Right - taxiLeft;
-                        factorX = deltaRight / -deltaPosition.X;
-                    }
-
-                    float factorY = 0f;
-                    if (deltaPosition.Y > 0)
-                    {
-                        float deltaTop = taxiBottom - block.Size.Top;
-                        factorY = deltaTop / deltaPosition.Y;
-                    }
-                    else
-                    {
-                        float deltaBottom = block.Size.Bottom - taxiTop;
-                        factorY = deltaBottom / -deltaPosition.Y;
-                    }
-
-                    if (Math.Abs(factorX) > 1f)
-                        factorX = 0f;
-                    if (Math.Abs(factorY) > 1f)
-                        factorY = 0f;
-
-                    // TODO: Fix Friction
-                    if (factorX > factorY)
-                    {
-                        taxi.Position -= new Vector2(deltaPosition.X * (factorX + 0.05f), 0);
-
-                        if (Math.Abs(taxi.Velocity.X) > 20f)
-                            crash.Play(Math.Max(0, Math.Min(1f, Math.Abs(taxi.Velocity.X) / 100)), 0, 0);
-
-                        taxi.Velocity *= new Vector2(0, 1);
-                    }
-                    else
-                    {
-                        taxi.Position -= new Vector2(0, deltaPosition.Y * (factorY + 0.05f));
-                        
-                        if (Math.Abs(taxi.Velocity.Y) > 20f)
-                            crash.Play(Math.Max(0, Math.Min(1f, Math.Abs(taxi.Velocity.Y) / 100)), 0, 0);
-                        
-                        taxi.Velocity *= new Vector2(1, 0);
-
-                        taxi.Velocity -= taxi.Velocity / block.Friction * 
-                            (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-                        if (taxi.Position.X - (taxi.Size.X / 2) >= block.Size.Left &&
-                            taxi.Position.X + (taxi.Size.X / 2) <= block.Size.Right &&
-                            taxi.Position.Y < block.Size.Top)
+                        float factorX = 0f;
+                        if (deltaPosition.X > 0)
                         {
-                            taxi.OnGround = block;
+                            float deltaLeft = taxiRight - block.Size.Left;
+                            factorX = deltaLeft / deltaPosition.X;
+                        }
+                        else
+                        {
+                            float deltaRight = block.Size.Right - taxiLeft;
+                            factorX = deltaRight / -deltaPosition.X;
+                        }
 
-                            if (taxi.Velocity.LengthSquared() < 100)
+                        float factorY = 0f;
+                        if (deltaPosition.Y > 0)
+                        {
+                            float deltaTop = taxiBottom - block.Size.Top;
+                            factorY = deltaTop / deltaPosition.Y;
+                        }
+                        else
+                        {
+                            float deltaBottom = block.Size.Bottom - taxiTop;
+                            factorY = deltaBottom / -deltaPosition.Y;
+                        }
+
+                        if (Math.Abs(factorX) > 1f)
+                            factorX = 0f;
+                        if (Math.Abs(factorY) > 1f)
+                            factorY = 0f;
+
+                        // TODO: Fix Friction
+                        if (factorX > factorY)
+                        {
+                            taxi.Position -= new Vector2(deltaPosition.X * (factorX + 0.05f), 0);
+
+                            if (Math.Abs(taxi.Velocity.X) > 20f)
+                                sound.PlayCrash(Math.Max(0, Math.Min(1f, Math.Abs(taxi.Velocity.X) / 100)));
+
+                            taxi.Velocity *= new Vector2(0, 1);
+                        }
+                        else
+                        {
+                            taxi.Position -= new Vector2(0, deltaPosition.Y * (factorY + 0.05f));
+
+                            if (Math.Abs(taxi.Velocity.Y) > 20f)
+                                sound.PlayCrash(Math.Max(0, Math.Min(1f, Math.Abs(taxi.Velocity.Y) / 100)));
+
+                            taxi.Velocity *= new Vector2(1, 0);
+
+                            taxi.Velocity -= taxi.Velocity / block.Friction *
+                                (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                            if (taxi.Position.X - (taxi.Size.X / 2) >= block.Size.Left &&
+                                taxi.Position.X + (taxi.Size.X / 2) <= block.Size.Right &&
+                                taxi.Position.Y < block.Size.Top)
                             {
-                                var guest = taxi.Guests.SingleOrDefault(g => g.Destination == block);
-                                if (guest != null)
+                                taxi.OnGround = block;
+
+                                if (taxi.Velocity.LengthSquared() < 100)
                                 {
-                                    taxi.Guests.Remove(guest);
-                                    guest.Position = new Vector2(taxi.Position.X, guest.Destination.Size.Top);
-                                    guest.CurrentBlock = guest.Destination;
-                                    points++;
+                                    var guest = taxi.Guests.SingleOrDefault(g => g.Destination == block);
+                                    if (guest != null)
+                                    {
+                                        taxi.Guests.Remove(guest);
+                                        guest.Position = new Vector2(taxi.Position.X, guest.Destination.Size.Top);
+                                        guest.CurrentBlock = guest.Destination;
+                                        points++;
+                                    }
                                 }
                             }
                         }
+
+                        scratchVolume = Math.Max(0, Math.Min(1, taxi.Velocity.Length() / 100));
+                        scratchPitch = (scratchVolume - 0.5f) * 2;
                     }
-
-                    scratchVolume = Math.Max(0, Math.Min(1, taxi.Velocity.Length() / 100));
-                    scratchPitch = (scratchVolume - 0.5f) * 2;
                 }
+
+                sound.SetScratchPitch(taxi, -scratchPitch);
+                sound.SetScratchVolume(taxi, scratchVolume);
+
+                #endregion
             }
-
-            scratchInstance.Volume = scratchVolume;
-            scratchInstance.Pitch = -scratchPitch;
-
-            #endregion
 
             #region Respawn Guests
 
@@ -251,7 +243,7 @@ namespace MoonTaxi
                 };
 
                 level.Guests.Add(guest);
-                shout.Play(1, 0, 0);
+                sound.PlayShout();
             }
 
             #endregion
@@ -260,19 +252,22 @@ namespace MoonTaxi
             {
                 #region Einsteigen
 
-                if (guest.Departure == taxi.OnGround && 
-                    (guest.Position - taxi.Position).LengthSquared() < 10000 && 
-                    taxi.Velocity.LengthSquared() < 10 &&
-                    taxi.Guests.Count < taxi.GuestLimit &&
-                    guest.CurrentBlock == guest.Departure)
+                foreach (var taxi in taxis)
                 {
-                    float guestSpeed = (float)gameTime.ElapsedGameTime.TotalSeconds * 20;
-                    guest.Position += new Vector2(Math.Max(-guestSpeed, Math.Min(guestSpeed, taxi.Position.X - guest.Position.X)), 0);
-
-                    if (Math.Abs(taxi.Position.X - guest.Position.X) < 4)
+                    if (guest.Departure == taxi.OnGround &&
+                        (guest.Position - taxi.Position).LengthSquared() < 10000 &&
+                        taxi.Velocity.LengthSquared() < 10 &&
+                        taxi.Guests.Count < taxi.GuestLimit &&
+                        guest.CurrentBlock == guest.Departure)
                     {
-                        guest.CurrentBlock = null;
-                        taxi.Guests.Add(guest);
+                        float guestSpeed = (float)gameTime.ElapsedGameTime.TotalSeconds * 20;
+                        guest.Position += new Vector2(Math.Max(-guestSpeed, Math.Min(guestSpeed, taxi.Position.X - guest.Position.X)), 0);
+
+                        if (Math.Abs(taxi.Position.X - guest.Position.X) < 4)
+                        {
+                            guest.CurrentBlock = null;
+                            taxi.Guests.Add(guest);
+                        }
                     }
                 }
 
@@ -337,13 +332,16 @@ namespace MoonTaxi
             spriteBatch.End();
 
             spriteBatch.Begin();
-            spriteBatch.Draw(taxiTexture, new Rectangle(
-                (int)(taxi.Position.X - taxi.Size.X / 2),
-                (int)(taxi.Position.Y - taxi.Size.Y / 2),
-                (int)taxi.Size.X,
-                (int)taxi.Size.Y), Color.White);
-            if (taxi.OnGround != null)
-                spriteBatch.Draw(pix, new Rectangle(10, 10, 10, 10), Color.Red);
+            foreach (var taxi in taxis)
+            {
+                spriteBatch.Draw(taxiTexture, new Rectangle(
+                    (int)(taxi.Position.X - taxi.Size.X / 2),
+                    (int)(taxi.Position.Y - taxi.Size.Y / 2),
+                    (int)taxi.Size.X,
+                    (int)taxi.Size.Y), Color.White);
+                if (taxi.OnGround != null)
+                    spriteBatch.Draw(pix, new Rectangle(10, 10, 10, 10), Color.Red);
+            }
             spriteBatch.End();
 
             base.Draw(gameTime);

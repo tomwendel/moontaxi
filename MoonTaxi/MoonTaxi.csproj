@@ -38,11 +38,13 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Generator\ILevelGenerator.cs" />
-    <Compile Include="Generator\LevelGenerator.cs" />
+    <Compile Include="Components\SoundComponent.cs" />
+    <Compile Include="Interaction\LocalInput.cs" />
     <Compile Include="Models\Block.cs" />
     <Compile Include="Models\Guest.cs" />
+    <Compile Include="Interaction\IInput.cs" />
     <Compile Include="Models\Level.cs" />
+    <Compile Include="Generator\RandomLevel.cs" />
     <Compile Include="Models\Taxi.cs" />
     <Compile Include="MoonTaxi.cs" />
     <Compile Include="Program.cs" />

@@ -8,26 +8,26 @@ using System.Xml.Serialization;
 namespace MoonTaxi.Models
 {
     [Serializable]
-    public class Level
+    public abstract class Level
     {
         // TODO: Seiten sollten wrap-bar sein (x und y - levelsettings)
-        public Vector2 Size { get; set; }
+        public Vector2 Size { get; private set; }
 
         public int ParallelGuests { get; set; }
 
-        public List<Block> Blocks { get; set; }
+        public List<Block> Blocks { get; private set; }
 
         [XmlIgnore]
-        public List<Guest> Guests { get; set; }
+        public List<Guest> Guests { get; private set; }
 
-        public Vector2 TaxiSpawn { get; set; }
+        public abstract Vector2 GetTaxiSpawn();
 
-        public Level()
+        public Level(Vector2 size, int parallelGuestCounts)
         {
             Blocks = new List<Block>();
             Guests = new List<Guest>();
-            Size = new Vector2(1280, 720);
-            ParallelGuests = 1;
+            Size = size;
+            ParallelGuests = parallelGuestCounts;
         }
     }
 }

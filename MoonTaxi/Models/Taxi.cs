@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using MoonTaxi.Interaction;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,8 @@ namespace MoonTaxi.Models
     //Taxi Model
     internal class Taxi
     {
+        private IInput input;
+
         public Vector2 DeltaVelocity { get; set; }
 
         public Vector2 Position { get; set; }
@@ -24,8 +27,10 @@ namespace MoonTaxi.Models
 
         public Vector2 Size { get; private set; }
 
-        public Taxi()
+        public Taxi(IInput input)
         {
+            this.input = input;
+
             Guests = new List<Guest>();
             Reset();
             Size = new Vector2(50, 20);
@@ -41,15 +46,7 @@ namespace MoonTaxi.Models
 
         internal void Update(GameTime gameTime)
         {
-            var gamepad = GamePad.GetState(PlayerIndex.One);
-            var keyboard = Keyboard.GetState();
-
-
-            DeltaVelocity = gamepad.ThumbSticks.Left * new Vector2(1, -1);
-            DeltaVelocity += new Vector2((keyboard.IsKeyDown(Keys.Left) ? -1 : 0) + (keyboard.IsKeyDown(Keys.Right) ? 1 : 0),
-                                        (keyboard.IsKeyDown(Keys.Up) ? -1 : 0) + (keyboard.IsKeyDown(Keys.Down) ? 1 : 0));
-            DeltaVelocity.Normalize();
-            DeltaVelocity *= (float)gameTime.ElapsedGameTime.TotalSeconds * 100;
+            DeltaVelocity = input.GetDirection() * (float)gameTime.ElapsedGameTime.TotalSeconds * 100;
             Velocity += DeltaVelocity;
 
             Velocity += new Vector2(0, 1.6f * (float)gameTime.ElapsedGameTime.TotalSeconds);
